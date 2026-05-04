@@ -4,7 +4,7 @@ import { loginUser, registerUser } from '../services/api'
 
 export default function LoginPage() {
   const [isRegister, setIsRegister] = useState(false)
-  const [form, setForm] = useState({ name: '', username: '', email: '', password: '' })
+  const [form, setForm] = useState({ name: '', username: '', email: '', password: '', phone: '', address: '' })
   const [error, setError] = useState('')
   const navigate = useNavigate()
 
@@ -15,7 +15,7 @@ export default function LoginPage() {
     setError('')
     try {
       if (isRegister) {
-        const { data } = await registerUser(form.name, form.username, form.email, form.password)
+        const { data } = await registerUser(form.name, form.username, form.email, form.password, form.phone, form.address)
         localStorage.setItem('user', JSON.stringify(data))
         navigate(`/users/${data.username}/info`)
       } else {
@@ -29,34 +29,34 @@ export default function LoginPage() {
   }
 
   return (
-    <div style={{ maxWidth: 300, margin: '100px auto' }}>
-      <h2>{isRegister ? 'Register' : 'Login'}</h2>
-      <form onSubmit={handleSubmit}>
-        {isRegister && (
-          <div>
+    <div className="auth-wrapper">
+      <div className="auth-card">
+        <h2>{isRegister ? 'Create Account' : 'Welcome Back'}</h2>
+        <form onSubmit={handleSubmit}>
+          {isRegister && (
             <input name="name" placeholder="Full Name" value={form.name} onChange={handleChange} required />
-          </div>
-        )}
-        <div>
+          )}
           <input name="username" placeholder="Username" value={form.username} onChange={handleChange} required />
-        </div>
-        {isRegister && (
-          <div>
+          {isRegister && (
             <input name="email" type="email" placeholder="Email" value={form.email} onChange={handleChange} required />
-          </div>
-        )}
-        <div>
+          )}
+          {isRegister && (
+            <input name="phone" placeholder="Phone" value={form.phone} onChange={handleChange} />
+          )}
+          {isRegister && (
+            <input name="address" placeholder="Address" value={form.address} onChange={handleChange} />
+          )}
           <input name="password" type="password" placeholder="Password" value={form.password} onChange={handleChange} required />
+          {error && <p className="auth-error">{error}</p>}
+          <button type="submit">{isRegister ? 'Register' : 'Login'}</button>
+        </form>
+        <div className="auth-toggle">
+          {isRegister ? 'Already have an account?' : "Don't have an account?"}
+          <button onClick={() => { setIsRegister(!isRegister); setError('') }}>
+            {isRegister ? 'Login' : 'Register'}
+          </button>
         </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit">{isRegister ? 'Register' : 'Login'}</button>
-      </form>
-      <p>
-        {isRegister ? 'Already have an account?' : "Don't have an account?"}{' '}
-        <button onClick={() => { setIsRegister(!isRegister); setError('') }} style={{ background: 'none', border: 'none', color: 'blue', cursor: 'pointer', padding: 0 }}>
-          {isRegister ? 'Login' : 'Register'}
-        </button>
-      </p>
+      </div>
     </div>
   )
 }

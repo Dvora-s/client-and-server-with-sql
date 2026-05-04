@@ -1,20 +1,23 @@
 import pool from '../config/db.js';
 
 export const getAllUsers = async () => {
-  const [rows] = await pool.query('SELECT id, name, username, email FROM users');
+  const [rows] = await pool.query('SELECT id, name, username, email, phone, address FROM users');
   return rows;
 };
 
 export const getUserById = async (id) => {
-  const [rows] = await pool.query('SELECT id, name, username, email FROM users WHERE id = ?', [id]);
+  const [rows] = await pool.query('SELECT id, name, username, email, phone, address FROM users WHERE id = ?', [id]);
   return rows[0];
 };
 
-export const createUser = async (name, username, email, password) => {
+export const createUser = async (name, username, email, password, phone, address) => {
   const conn = await pool.getConnection();
   try {
     await conn.beginTransaction();
-    const [result] = await conn.query('INSERT INTO users (name, username, email) VALUES (?, ?, ?)', [name, username, email]);
+    const [result] = await conn.query(
+      'INSERT INTO users (name, username, email, phone, address) VALUES (?, ?, ?, ?, ?)',
+      [name, username, email, phone, address]
+    );
     await conn.query('INSERT INTO passwords (user_id, password) VALUES (?, ?)', [result.insertId, password]);
     await conn.commit();
     return result.insertId;

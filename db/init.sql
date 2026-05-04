@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS users (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   username VARCHAR(50) NOT NULL UNIQUE,
-  email VARCHAR(100) NOT NULL UNIQUE
+  email VARCHAR(100) NOT NULL UNIQUE,
+  phone VARCHAR(20),
+  address VARCHAR(255)
 );
 
 CREATE TABLE IF NOT EXISTS passwords (
@@ -42,10 +44,10 @@ CREATE TABLE IF NOT EXISTS comments (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
-INSERT INTO users (name, username, email) VALUES
-('Leanne Graham', 'Bret', 'sincere@april.biz'),
-('Ervin Howell', 'Antonette', 'shanna@melissa.tv'),
-('Clementine Bauch', 'Samantha', 'nathan@yesenia.net');
+INSERT INTO users (name, username, email, phone, address) VALUES
+('Leanne Graham', 'Bret', 'sincere@april.biz', '1-770-736-8031', 'Kulas Light, Gwenborough'),
+('Ervin Howell', 'Antonette', 'shanna@melissa.tv', '010-692-6593', 'Victor Plains, Wisokyburgh'),
+('Clementine Bauch', 'Samantha', 'nathan@yesenia.net', '1-463-123-4447', 'Douglas Extension, McKenziehaven');
 
 INSERT INTO passwords (user_id, password) VALUES
 (1, '1234'),

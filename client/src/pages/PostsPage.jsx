@@ -10,10 +10,10 @@ export default function PostsPage() {
   }, [])
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="page">
       <h2>{user.username}'s Posts</h2>
       {posts.map((post) => (
-        <div key={post.id} style={{ marginBottom: 16, borderBottom: '1px solid #ccc', paddingBottom: 8 }}>
+        <div key={post.id} className="post-card">
           <h4>{post.title}</h4>
           <p>{post.body}</p>
         </div>

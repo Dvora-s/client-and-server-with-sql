@@ -2,11 +2,34 @@ export default function InfoPage() {
   const user = JSON.parse(localStorage.getItem('user'))
 
   return (
-    <div style={{ padding: 24 }}>
+    <div className="page">
       <h2>Personal Info</h2>
-      <p><strong>Name:</strong> {user.name}</p>
-      <p><strong>Username:</strong> {user.username}</p>
-      <p><strong>Email:</strong> {user.email}</p>
+      <div className="info-card">
+        <div className="info-row">
+          <span className="info-label">Name</span>
+          <span>{user.name}</span>
+        </div>
+        <div className="info-row">
+          <span className="info-label">Username</span>
+          <span>{user.username}</span>
+        </div>
+        <div className="info-row">
+          <span className="info-label">Email</span>
+          <span>{user.email}</span>
+        </div>
+        {user.phone && (
+          <div className="info-row">
+            <span className="info-label">Phone</span>
+            <span>{user.phone}</span>
+          </div>
+        )}
+        {user.address && (
+          <div className="info-row">
+            <span className="info-label">Address</span>
+            <span>{user.address}</span>
+          </div>
+        )}
+      </div>
     </div>
   )
 }

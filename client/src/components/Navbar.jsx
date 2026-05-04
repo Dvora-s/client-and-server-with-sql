@@ -11,11 +11,11 @@ export default function Navbar({ username }) {
   const base = `/users/${username}`
 
   return (
-    <nav style={{ display: 'flex', gap: 16, padding: 12, background: '#eee' }}>
+    <nav className="navbar">
       <NavLink to={`${base}/info`}>Info</NavLink>
       <NavLink to={`${base}/todos`}>Todos</NavLink>
       <NavLink to={`${base}/posts`}>Posts</NavLink>
-      <button onClick={handleLogout}>Logout</button>
+      <button className="logout-btn" onClick={handleLogout}>Logout</button>
     </nav>
   )
 }
