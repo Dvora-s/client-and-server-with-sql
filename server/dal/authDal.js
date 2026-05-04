@@ -7,3 +7,4 @@ export const getUserByUsername = async (username) => {
   );
   return rows[0];
 };
+

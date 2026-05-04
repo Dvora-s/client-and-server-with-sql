@@ -19,16 +19,6 @@ export const getById = async (req, res) => {
   }
 };
 
-export const create = async (req, res) => {
-  const { name, username, email, password } = req.body;
-  try {
-    const id = await usersDal.createUser(name, username, email, password);
-    res.status(201).json({ id, name, username, email });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
 export const update = async (req, res) => {
   const { name, username, email } = req.body;
   try {
