@@ -1,12 +1,18 @@
 import pool from '../config/db.js';
 
-export const getAllPosts = async () => {
-  const [rows] = await pool.query('SELECT * FROM posts ORDER BY id');
+export const getAllPosts = async (search = '') => {
+  const [rows] = await pool.query(
+    'SELECT * FROM posts WHERE title LIKE ? OR body LIKE ? ORDER BY id',
+    [`%${search}%`, `%${search}%`]
+  );
   return rows;
 };
 
-export const getPostsByUserId = async (userId) => {
-  const [rows] = await pool.query('SELECT * FROM posts WHERE user_id = ? ORDER BY id', [userId]);
+export const getPostsByUserId = async (userId, search = '') => {
+  const [rows] = await pool.query(
+    'SELECT * FROM posts WHERE user_id = ? AND (title LIKE ? OR body LIKE ?) ORDER BY id',
+    [userId, `%${search}%`, `%${search}%`]
+  );
   return rows;
 };
 

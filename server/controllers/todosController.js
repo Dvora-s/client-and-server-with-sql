@@ -2,9 +2,9 @@ import * as todosDal from '../dal/todosDal.js';
 
 export const getAll = async (req, res) => {
   try {
-    const userId = req.query.userId;
+    const { userId, search = '', sort = 'id' } = req.query;
     const todos = userId
-      ? await todosDal.getTodosByUserId(userId)
+      ? await todosDal.getTodosByUserId(userId, search, sort)
       : await todosDal.getAllTodos();
     res.json(todos);
   } catch (err) {

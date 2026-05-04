@@ -7,27 +7,35 @@ export default function TodosPage() {
   const [newTitle, setNewTitle] = useState('')
   const [editId, setEditId] = useState(null)
   const [editTitle, setEditTitle] = useState('')
+  const [search, setSearch] = useState('')
+  const [sort, setSort] = useState('id')
 
-  useEffect(() => {
-    getUserTodos(user.id).then(({ data }) => setTodos(data))
-  }, [])
+  const fetchTodos = (s = search, o = sort) =>
+    getUserTodos(user.id, s, o).then(({ data }) => setTodos(data))
+
+  useEffect(() => { fetchTodos() }, [])
+
+  const handleSearch = (e) => {
+    setSearch(e.target.value)
+    fetchTodos(e.target.value, sort)
+  }
+
+  const handleSort = (e) => {
+    setSort(e.target.value)
+    fetchTodos(search, e.target.value)
+  }
 
   const handleAdd = async (e) => {
     e.preventDefault()
     if (!newTitle.trim()) return
     const { data } = await addTodo(user.id, newTitle.trim())
-    setTodos([...todos, data])
+    setTodos(prev => [...prev, data])
     setNewTitle('')
   }
 
   const handleToggle = async (todo) => {
     await updateTodo(todo.id, todo.title, !todo.completed)
     setTodos(todos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))
-  }
-
-  const handleEdit = (todo) => {
-    setEditId(todo.id)
-    setEditTitle(todo.title)
   }
 
   const handleEditSave = async (todo) => {
@@ -47,38 +55,36 @@ export default function TodosPage() {
       <h2>{user.username}'s Todos</h2>
 
       <form className="todo-add-form" onSubmit={handleAdd}>
-        <input
-          placeholder="New todo..."
-          value={newTitle}
-          onChange={(e) => setNewTitle(e.target.value)}
-        />
+        <input placeholder="New todo..." value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
         <button type="submit">Add</button>
       </form>
 
+      <div className="todo-filters">
+        <input placeholder="🔍 Search..." value={search} onChange={handleSearch} />
+        <select value={sort} onChange={handleSort}>
+          <option value="id">Sort by ID</option>
+          <option value="title">Sort by Title</option>
+          <option value="date">Sort by Date</option>
+          <option value="completed">Sort by Status</option>
+        </select>
+      </div>
+
       <div className="todo-list">
+        {todos.length === 0 && <p className="todo-empty">No todos found.</p>}
         {todos.map((todo) => (
           <div key={todo.id} className={`todo-item ${todo.completed ? 'done' : ''}`}>
-            <input
-              type="checkbox"
-              checked={!!todo.completed}
-              onChange={() => handleToggle(todo)}
-            />
+            <input type="checkbox" checked={!!todo.completed} onChange={() => handleToggle(todo)} />
             {editId === todo.id ? (
               <>
-                <input
-                  className="todo-edit-input"
-                  value={editTitle}
-                  onChange={(e) => setEditTitle(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleEditSave(todo)}
-                  autoFocus
-                />
+                <input className="todo-edit-input" value={editTitle} onChange={(e) => setEditTitle(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && handleEditSave(todo)} autoFocus />
                 <button className="todo-btn save" onClick={() => handleEditSave(todo)}>Save</button>
                 <button className="todo-btn cancel" onClick={() => setEditId(null)}>Cancel</button>
               </>
             ) : (
               <>
                 <span className="todo-title">{todo.title}</span>
-                <button className="todo-btn edit" onClick={() => handleEdit(todo)}>Edit</button>
+                {todo.created_at && <span className="todo-date">{new Date(todo.created_at).toLocaleDateString()}</span>}
+                <button className="todo-btn edit" onClick={() => { setEditId(todo.id); setEditTitle(todo.title) }}>Edit</button>
                 <button className="todo-btn delete" onClick={() => handleDelete(todo.id)}>Delete</button>
               </>
             )}

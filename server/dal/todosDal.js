@@ -5,8 +5,13 @@ export const getAllTodos = async () => {
   return rows;
 };
 
-export const getTodosByUserId = async (userId) => {
-  const [rows] = await pool.query('SELECT * FROM todos WHERE user_id = ? ORDER BY id', [userId]);
+export const getTodosByUserId = async (userId, search = '', sort = 'id') => {
+  const validSorts = { id: 'id', title: 'title', date: 'created_at', completed: 'completed' };
+  const orderBy = validSorts[sort] || 'id';
+  const [rows] = await pool.query(
+    `SELECT * FROM todos WHERE user_id = ? AND title LIKE ? ORDER BY ${orderBy}`,
+    [userId, `%${search}%`]
+  );
   return rows;
 };
 

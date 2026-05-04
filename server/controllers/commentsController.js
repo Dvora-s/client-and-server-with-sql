@@ -33,10 +33,12 @@ export const create = async (req, res) => {
 };
 
 export const update = async (req, res) => {
-  const { name, body } = req.body;
+  const { name, body, userId } = req.body;
   try {
-    const affected = await commentsDal.updateComment(req.params.id, name, body);
-    if (!affected) return res.status(404).json({ message: 'Comment not found' });
+    const comment = await commentsDal.getCommentById(req.params.id);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+    if (comment.user_id != userId) return res.status(403).json({ message: 'Not authorized' });
+    await commentsDal.updateComment(req.params.id, name, body);
     res.json({ id: req.params.id, name, body });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -44,9 +46,12 @@ export const update = async (req, res) => {
 };
 
 export const remove = async (req, res) => {
+  const { userId } = req.body;
   try {
-    const affected = await commentsDal.deleteComment(req.params.id);
-    if (!affected) return res.status(404).json({ message: 'Comment not found' });
+    const comment = await commentsDal.getCommentById(req.params.id);
+    if (!comment) return res.status(404).json({ message: 'Comment not found' });
+    if (comment.user_id != userId) return res.status(403).json({ message: 'Not authorized' });
+    await commentsDal.deleteComment(req.params.id);
     res.json({ message: 'Comment deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });
