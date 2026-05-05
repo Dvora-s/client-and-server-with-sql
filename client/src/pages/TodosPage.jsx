@@ -9,45 +9,60 @@ export default function TodosPage() {
   const [editTitle, setEditTitle] = useState('')
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('id')
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const LIMIT = 5
 
-  const fetchTodos = (s = search, o = sort) =>
-    getUserTodos(user.id, s, o).then(({ data }) => setTodos(data))
+  const fetchTodos = (s = search, o = sort, p = page) =>
+    getUserTodos(user.id, s, o, p).then(({ data }) => {
+      const todos = Array.isArray(data) ? data : (data.todos || [])
+      const total = Array.isArray(data) ? data.length : (data.total || 0)
+      setTodos(todos)
+      setTotal(total)
+    })
 
   useEffect(() => { fetchTodos() }, [])
 
   const handleSearch = (e) => {
     setSearch(e.target.value)
-    fetchTodos(e.target.value, sort)
+    setPage(1)
+    fetchTodos(e.target.value, sort, 1)
   }
 
   const handleSort = (e) => {
     setSort(e.target.value)
-    fetchTodos(search, e.target.value)
+    setPage(1)
+    fetchTodos(search, e.target.value, 1)
+  }
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage)
+    fetchTodos(search, sort, newPage)
   }
 
   const handleAdd = async (e) => {
     e.preventDefault()
     if (!newTitle.trim()) return
-    const { data } = await addTodo(user.id, newTitle.trim())
-    setTodos(prev => [...prev, data])
+    await addTodo(user.id, newTitle.trim())
     setNewTitle('')
+    fetchTodos(search, sort, page)
   }
 
   const handleToggle = async (todo) => {
     await updateTodo(todo.id, todo.title, !todo.completed)
-    setTodos(todos.map(t => t.id === todo.id ? { ...t, completed: !t.completed } : t))
+    fetchTodos(search, sort, page)
   }
 
   const handleEditSave = async (todo) => {
     if (!editTitle.trim()) return
     await updateTodo(todo.id, editTitle.trim(), todo.completed)
-    setTodos(todos.map(t => t.id === todo.id ? { ...t, title: editTitle.trim() } : t))
     setEditId(null)
+    fetchTodos(search, sort, page)
   }
 
   const handleDelete = async (id) => {
     await deleteTodo(id)
-    setTodos(todos.filter(t => t.id !== id))
+    fetchTodos(search, sort, page)
   }
 
   return (
@@ -90,6 +105,12 @@ export default function TodosPage() {
             )}
           </div>
         ))}
+      </div>
+
+      <div className="pagination">
+        <button disabled={page === 1} onClick={() => handlePageChange(page - 1)}>◀ Prev</button>
+        <span>Page {page} of {Math.ceil(total / LIMIT) || 1}</span>
+        <button disabled={page >= Math.ceil(total / LIMIT)} onClick={() => handlePageChange(page + 1)}>Next ▶</button>
       </div>
     </div>
   )

@@ -1,19 +1,19 @@
 import pool from '../config/db.js';
+import { getPaginated, getCount } from './paginationDal.js';
 
 export const getAllTodos = async () => {
   const [rows] = await pool.query('SELECT * FROM todos ORDER BY id');
   return rows;
 };
 
-export const getTodosByUserId = async (userId, search = '', sort = 'id') => {
+export const getTodosByUserId = (userId, search = '', sort = 'id', limit = 5, offset = 0) => {
   const validSorts = { id: 'id', title: 'title', date: 'created_at', completed: 'completed' };
   const orderBy = validSorts[sort] || 'id';
-  const [rows] = await pool.query(
-    `SELECT * FROM todos WHERE user_id = ? AND title LIKE ? ORDER BY ${orderBy}`,
-    [userId, `%${search}%`]
-  );
-  return rows;
+  return getPaginated('todos', 'user_id = ? AND title LIKE ?', [userId, `%${search}%`], orderBy, limit, offset);
 };
+
+export const countTodosByUserId = (userId, search = '') =>
+  getCount('todos', 'user_id = ? AND title LIKE ?', [userId, `%${search}%`]);
 
 export const getTodoById = async (id) => {
   const [rows] = await pool.query('SELECT * FROM todos WHERE id = ?', [id]);

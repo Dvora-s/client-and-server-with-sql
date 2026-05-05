@@ -2,11 +2,18 @@ import * as postsDal from '../dal/postsDal.js';
 
 export const getAll = async (req, res) => {
   try {
-    const { userId, search = '' } = req.query;
-    const posts = userId
-      ? await postsDal.getPostsByUserId(userId, search)
-      : await postsDal.getAllPosts(search);
-    res.json(posts);
+    const { userId, search = '', page = 1 } = req.query;
+    const limit = 5;
+    const offset = (parseInt(page) - 1) * limit;
+    if (userId) {
+      const posts = await postsDal.getPostsByUserId(userId, search);
+      return res.json({ posts, total: posts.length });
+    }
+    const [posts, total] = await Promise.all([
+      postsDal.getAllPosts(search, limit, offset),
+      postsDal.countAllPosts(search)
+    ]);
+    res.json({ posts, total });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

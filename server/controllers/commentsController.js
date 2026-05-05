@@ -26,7 +26,7 @@ export const create = async (req, res) => {
   const { postId, userId, name, body } = req.body;
   try {
     const id = await commentsDal.createComment(postId, userId, name, body);
-    res.status(201).json({ id, postId, userId, name, body });
+    res.status(201).json({ id, post_id: postId, user_id: userId, name, body });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

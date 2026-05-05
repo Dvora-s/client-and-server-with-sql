@@ -1,12 +1,11 @@
 import pool from '../config/db.js';
+import { getPaginated, getCount } from './paginationDal.js';
 
-export const getAllPosts = async (search = '') => {
-  const [rows] = await pool.query(
-    'SELECT * FROM posts WHERE title LIKE ? OR body LIKE ? ORDER BY id',
-    [`%${search}%`, `%${search}%`]
-  );
-  return rows;
-};
+export const getAllPosts = (search = '', limit = 5, offset = 0) =>
+  getPaginated('posts', 'title LIKE ? OR body LIKE ?', [`%${search}%`, `%${search}%`], 'id DESC', limit, offset);
+
+export const countAllPosts = (search = '') =>
+  getCount('posts', 'title LIKE ? OR body LIKE ?', [`%${search}%`, `%${search}%`]);
 
 export const getPostsByUserId = async (userId, search = '') => {
   const [rows] = await pool.query(

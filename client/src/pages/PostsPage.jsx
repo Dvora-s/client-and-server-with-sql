@@ -5,6 +5,9 @@ export default function PostsPage() {
   const user = JSON.parse(localStorage.getItem('user'))
   const [posts, setPosts] = useState([])
   const [search, setSearch] = useState('')
+  const [page, setPage] = useState(1)
+  const [total, setTotal] = useState(0)
+  const LIMIT = 5
   const [newPost, setNewPost] = useState({ title: '', body: '' })
   const [editPost, setEditPost] = useState(null)
   const [openComments, setOpenComments] = useState({})
@@ -12,33 +15,44 @@ export default function PostsPage() {
   const [newComment, setNewComment] = useState({})
   const [editComment, setEditComment] = useState(null)
 
-  const fetchPosts = (s = search) =>
-    getAllPosts(s).then(({ data }) => setPosts(data))
+  const fetchPosts = (s = search, p = page) =>
+    getAllPosts(s, p).then(({ data }) => {
+      const posts = Array.isArray(data) ? data : (data.posts || [])
+      const total = Array.isArray(data) ? data.length : (data.total || 0)
+      setPosts(posts)
+      setTotal(total)
+    })
 
   useEffect(() => { fetchPosts() }, [])
 
   const handleSearch = (e) => {
     setSearch(e.target.value)
-    fetchPosts(e.target.value)
+    setPage(1)
+    fetchPosts(e.target.value, 1)
+  }
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage)
+    fetchPosts(search, newPage)
   }
 
   const handleAddPost = async (e) => {
     e.preventDefault()
     if (!newPost.title.trim() || !newPost.body.trim()) return
-    const { data } = await addPost(user.id, newPost.title.trim(), newPost.body.trim())
-    setPosts(prev => [...prev, data])
+    await addPost(user.id, newPost.title.trim(), newPost.body.trim())
     setNewPost({ title: '', body: '' })
+    fetchPosts(search, page)
   }
 
   const handleUpdatePost = async (post) => {
     await updatePost(post.id, editPost.title, editPost.body, user.id)
-    setPosts(posts.map(p => p.id === post.id ? { ...p, ...editPost } : p))
     setEditPost(null)
+    fetchPosts(search, page)
   }
 
   const handleDeletePost = async (id) => {
     await deletePost(id, user.id)
-    setPosts(posts.filter(p => p.id !== id))
+    fetchPosts(search, page)
   }
 
   const toggleComments = async (postId) => {
@@ -161,6 +175,11 @@ export default function PostsPage() {
           )}
         </div>
       ))}
+      <div className="pagination">
+        <button disabled={page === 1} onClick={() => handlePageChange(page - 1)}>◀ Prev</button>
+        <span>Page {page} of {Math.ceil(total / LIMIT)}</span>
+        <button disabled={page >= Math.ceil(total / LIMIT)} onClick={() => handlePageChange(page + 1)}>Next ▶</button>
+      </div>
     </div>
   )
 }

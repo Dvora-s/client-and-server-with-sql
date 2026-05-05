@@ -2,38 +2,74 @@ import axios from 'axios'
 
 const API = axios.create({ baseURL: 'http://localhost:3002' })
 
+const cache = {}
+
+const getCache = (key) => cache[key]
+const setCache = (key, data) => { cache[key] = data }
+export const clearCache = (prefix) => {
+  Object.keys(cache).forEach(k => { if (k.startsWith(prefix)) delete cache[k] })
+}
+
 export const loginUser = (username, password) =>
   API.post('/auth/login', { username, password })
 
 export const registerUser = (name, username, email, password, phone, address) =>
   API.post('/auth/register', { name, username, email, password, phone, address })
 
-export const getUserTodos = (userId, search = '', sort = 'id') =>
-  API.get('/todos', { params: { userId, search, sort } })
+export const getUserTodos = async (userId, search = '', sort = 'id', page = 1) => {
+  const key = `todos_${userId}_${search}_${sort}_${page}`
+  if (getCache(key)) return { data: getCache(key) }
+  const res = await API.get('/todos', { params: { userId, search, sort, page } })
+  setCache(key, res.data)
+  return res
+}
 
-export const addTodo = (userId, title) =>
-  API.post('/todos', { userId, title, completed: false })
+export const addTodo = async (userId, title) => {
+  const res = await API.post('/todos', { userId, title, completed: false })
+  clearCache('todos_')
+  return res
+}
 
-export const updateTodo = (id, title, completed) =>
-  API.put(`/todos/${id}`, { title, completed })
+export const updateTodo = async (id, title, completed) => {
+  const res = await API.put(`/todos/${id}`, { title, completed })
+  clearCache('todos_')
+  return res
+}
 
-export const deleteTodo = (id) =>
-  API.delete(`/todos/${id}`)
+export const deleteTodo = async (id) => {
+  const res = await API.delete(`/todos/${id}`)
+  clearCache('todos_')
+  return res
+}
 
-export const getAllPosts = (search = '') =>
-  API.get('/posts', { params: { search } })
+export const getAllPosts = async (search = '', page = 1) => {
+  const key = `posts_${search}_${page}`
+  if (getCache(key)) return { data: getCache(key) }
+  const res = await API.get('/posts', { params: { search, page } })
+  setCache(key, res.data)
+  return res
+}
 
 export const getUserPosts = (userId) =>
   API.get('/posts', { params: { userId } })
 
-export const addPost = (userId, title, body) =>
-  API.post('/posts', { userId, title, body })
+export const addPost = async (userId, title, body) => {
+  const res = await API.post('/posts', { userId, title, body })
+  clearCache('posts_')
+  return res
+}
 
-export const updatePost = (id, title, body, userId) =>
-  API.put(`/posts/${id}`, { title, body, userId })
+export const updatePost = async (id, title, body, userId) => {
+  const res = await API.put(`/posts/${id}`, { title, body, userId })
+  clearCache('posts_')
+  return res
+}
 
-export const deletePost = (id, userId) =>
-  API.delete(`/posts/${id}`, { data: { userId } })
+export const deletePost = async (id, userId) => {
+  const res = await API.delete(`/posts/${id}`, { data: { userId } })
+  clearCache('posts_')
+  return res
+}
 
 export const getComments = (postId) =>
   API.get('/comments', { params: { postId } })
