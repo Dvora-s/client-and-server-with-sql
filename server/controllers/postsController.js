@@ -3,12 +3,29 @@ import { getCache, setCache, clearCache } from '../cache.js';
 
 export const getAll = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { userId, search = '', filterUserId = '', page = 1 } = req.query;
     const key = `posts_${userId}_${search}_${filterUserId}_${page}`;
     if (getCache(key)) return res.json(getCache(key));
     const limit = 5;
     const offset = (parseInt(page) - 1) * limit;
     let result;
+=======
+    const {
+      userId,
+      _limit = 5,
+      _page = 1,
+      _sort = 'id',
+      _order = 'DESC',
+      ...filters
+    } = req.query;
+
+    const limit = parseInt(_limit);
+    const offset = (parseInt(_page) - 1) * limit;
+    const search = filters.q || filters.title_like || '';
+    const filterUserId = filters.user_id || filters.filterUserId || '';
+
+>>>>>>> 94c3a3b58b7481d0a28878c13902ebf13bbd4e04
     if (userId) {
       const posts = await postsDal.getPostsByUserId(userId, search);
       result = { posts, total: posts.length };
@@ -19,8 +36,19 @@ export const getAll = async (req, res) => {
       ]);
       result = { posts, total };
     }
+<<<<<<< HEAD
     setCache(key, result);
     res.json(result);
+=======
+
+    const [posts, total] = await Promise.all([
+      postsDal.getAllPosts(search, filterUserId, _sort, _order, limit, offset),
+      postsDal.countAllPosts(search, filterUserId)
+    ]);
+
+    res.set('X-Total-Count', total);
+    res.json({ posts, total });
+>>>>>>> 94c3a3b58b7481d0a28878c13902ebf13bbd4e04
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

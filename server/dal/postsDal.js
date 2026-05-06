@@ -1,19 +1,26 @@
 import pool from '../config/db.js';
 
-export const getAllPosts = async (search = '', filterUserId = '', limit = 5, offset = 0) => {
-  let where = '(title LIKE ? OR body LIKE ?)'
-  let params = [`%${search}%`, `%${search}%`]
-  if (filterUserId) { where += ' AND user_id = ?'; params.push(filterUserId) }
-  const [rows] = await pool.query(`SELECT * FROM posts WHERE ${where} ORDER BY id DESC LIMIT ? OFFSET ?`, [...params, limit, offset]);
+export const getAllPosts = async (search = '', filterUserId = '', sort = 'id', order = 'DESC', limit = 5, offset = 0) => {
+  const validSorts = { id: 'id', title: 'title', user: 'user_id', user_id: 'user_id' };
+  const orderBy = validSorts[sort] || 'id';
+  const dir = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
+
+  let where = '(title LIKE ? OR body LIKE ?)';
+  let params = [`%${search}%`, `%${search}%`];
+  if (filterUserId) { where += ' AND user_id = ?'; params.push(filterUserId); }
+  const [rows] = await pool.query(
+    `SELECT * FROM posts WHERE ${where} ORDER BY ${orderBy} ${dir} LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
   return rows;
 };
 
 export const countAllPosts = async (search = '', filterUserId = '') => {
-  let where = '(title LIKE ? OR body LIKE ?)'
-  let params = [`%${search}%`, `%${search}%`]
-  if (filterUserId) { where += ' AND user_id = ?'; params.push(filterUserId) }
-  const [rows] = await pool.query(`SELECT COUNT(*) as count FROM posts WHERE ${where}`, params);
-  return rows[0].count;
+  let where = '(title LIKE ? OR body LIKE ?)';
+  let params = [`%${search}%`, `%${search}%`];
+  if (filterUserId) { where += ' AND user_id = ?'; params.push(filterUserId); }
+  const [[{ total }]] = await pool.query(`SELECT COUNT(*) as total FROM posts WHERE ${where}`, params);
+  return total;
 };
 
 export const getPostsByUserId = async (userId, search = '') => {

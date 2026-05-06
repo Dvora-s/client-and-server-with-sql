@@ -3,24 +3,48 @@ import { getCache, setCache, clearCache } from '../cache.js';
 
 export const getAll = async (req, res) => {
   try {
+<<<<<<< HEAD
     const { userId, search = '', sort = 'id', page = 1 } = req.query;
     const key = `todos_${userId}_${search}_${sort}_${page}`;
     if (getCache(key)) return res.json(getCache(key));
     const limit = 5;
     const offset = (parseInt(page) - 1) * limit;
+=======
+    const {
+      userId,
+      _limit = 10,
+      _page = 1,
+      _sort = 'id',
+      _order = 'ASC',
+      completed,
+      ...filters
+    } = req.query;
+
+    const limit = parseInt(_limit);
+    const offset = (parseInt(_page) - 1) * limit;
+    const search = filters.title_like || filters.q || '';
+
+>>>>>>> 94c3a3b58b7481d0a28878c13902ebf13bbd4e04
     if (!userId) {
       const todos = await todosDal.getAllTodos();
       const result = { todos, total: todos.length };
       setCache(key, result);
       return res.json(result);
     }
+
     const [todos, total] = await Promise.all([
-      todosDal.getTodosByUserId(userId, search, sort, limit, offset),
-      todosDal.countTodosByUserId(userId, search)
+      todosDal.getTodosByUserId(userId, search, _sort, _order, limit, offset, completed),
+      todosDal.countTodosByUserId(userId, search, completed)
     ]);
+<<<<<<< HEAD
     const result = { todos, total };
     setCache(key, result);
     res.json(result);
+=======
+
+    res.set('X-Total-Count', total);
+    res.json({ todos, total });
+>>>>>>> 94c3a3b58b7481d0a28878c13902ebf13bbd4e04
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

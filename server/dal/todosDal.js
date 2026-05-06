@@ -6,14 +6,34 @@ export const getAllTodos = async () => {
   return rows;
 };
 
-export const getTodosByUserId = (userId, search = '', sort = 'id', limit = 5, offset = 0) => {
-  const validSorts = { id: 'id', title: 'title', date: 'created_at', completed: 'completed' };
+export const getTodosByUserId = async (userId, search = '', sort = 'id', order = 'ASC', limit = 10, offset = 0, completed) => {
+  const validSorts = { id: 'id', title: 'title', date: 'created_at', completed: 'completed', created_at: 'created_at' };
   const orderBy = validSorts[sort] || 'id';
-  return getPaginated('todos', 'user_id = ? AND title LIKE ?', [userId, `%${search}%`], orderBy, limit, offset);
+  const dir = order.toUpperCase() === 'DESC' ? 'DESC' : 'ASC';
+
+  let where = 'user_id = ? AND title LIKE ?';
+  let params = [userId, `%${search}%`];
+  if (completed !== undefined && completed !== '') {
+    where += ' AND completed = ?';
+    params.push(completed === 'true' ? 1 : 0);
+  }
+  const [rows] = await pool.query(
+    `SELECT * FROM todos WHERE ${where} ORDER BY ${orderBy} ${dir} LIMIT ? OFFSET ?`,
+    [...params, limit, offset]
+  );
+  return rows;
 };
 
-export const countTodosByUserId = (userId, search = '') =>
-  getCount('todos', 'user_id = ? AND title LIKE ?', [userId, `%${search}%`]);
+export const countTodosByUserId = async (userId, search = '', completed) => {
+  let where = 'user_id = ? AND title LIKE ?';
+  let params = [userId, `%${search}%`];
+  if (completed !== undefined && completed !== '') {
+    where += ' AND completed = ?';
+    params.push(completed === 'true' ? 1 : 0);
+  }
+  const [[{ total }]] = await pool.query(`SELECT COUNT(*) as total FROM todos WHERE ${where}`, params);
+  return total;
+};
 
 export const getTodoById = async (id) => {
   const [rows] = await pool.query('SELECT * FROM todos WHERE id = ?', [id]);

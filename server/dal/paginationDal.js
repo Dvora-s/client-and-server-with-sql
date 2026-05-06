@@ -1,7 +1,7 @@
 import pool from '../config/db.js';
 
 const ALLOWED_TABLES = ['posts', 'todos']
-const ALLOWED_ORDER = ['id', 'id DESC', 'title', 'created_at', 'completed']
+const ALLOWED_ORDER = ['id', 'id DESC', 'title', 'created_at', 'completed', 'user_id']
 
 export const getPaginated = async (table, where, params, orderBy, limit, offset) => {
   if (!ALLOWED_TABLES.includes(table)) throw new Error('Invalid table')

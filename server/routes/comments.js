@@ -1,12 +1,13 @@
 import { Router } from 'express';
 import { getAll, getById, create, update, remove } from '../controllers/commentsController.js';
+import { verifyToken } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', getAll);
-router.get('/:id', getById);
-router.post('/', create);
-router.put('/:id', update);
-router.delete('/:id', remove);
+router.get('/', verifyToken, getAll);
+router.get('/:id', verifyToken, getById);
+router.post('/', verifyToken, create);
+router.put('/:id', verifyToken, update);
+router.delete('/:id', verifyToken, remove);
 
 export default router;
