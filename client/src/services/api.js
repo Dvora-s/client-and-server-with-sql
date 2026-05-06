@@ -3,23 +3,13 @@ import { getCache, setCache, clearCache } from './cache.js'
 
 const API = axios.create({ baseURL: 'http://localhost:3002' })
 
-<<<<<<< HEAD
-export { clearCache }
-=======
 API.interceptors.request.use((config) => {
   const user = JSON.parse(localStorage.getItem('user'))
   if (user?.token) config.headers.Authorization = `Bearer ${user.token}`
   return config
 })
 
-const cache = {}
-
-const getCache = (key) => cache[key]
-const setCache = (key, data) => { cache[key] = data }
-export const clearCache = (prefix) => {
-  Object.keys(cache).forEach(k => { if (k.startsWith(prefix)) delete cache[k] })
-}
->>>>>>> 94c3a3b58b7481d0a28878c13902ebf13bbd4e04
+export { clearCache }
 
 export const loginUser = (username, password) =>
   API.post('/auth/login', { username, password })
@@ -27,10 +17,10 @@ export const loginUser = (username, password) =>
 export const registerUser = (name, username, email, password, phone, address) =>
   API.post('/auth/register', { name, username, email, password, phone, address })
 
-export const getUserTodos = async (userId, search = '', sort = 'id', page = 1, completed = '') => {
-  const key = `todos_${userId}_${search}_${sort}_${page}_${completed}`
+export const getUserTodos = async (userId, search = '', sort = 'id', page = 1) => {
+  const key = `todos_${userId}_${search}_${sort}_${page}`
   if (getCache(key)) return { data: getCache(key) }
-  const res = await API.get('/todos', { params: { userId, q: search, _sort: sort, _page: page, _limit: 10, completed } })
+  const res = await API.get('/todos', { params: { userId, search, sort, page } })
   setCache(key, res.data)
   return res
 }
@@ -56,7 +46,7 @@ export const deleteTodo = async (id) => {
 export const getAllPosts = async (search = '', filterUserId = '', sort = 'id', page = 1) => {
   const key = `posts_${search}_${filterUserId}_${sort}_${page}`
   if (getCache(key)) return { data: getCache(key) }
-  const res = await API.get('/posts', { params: { q: search, user_id: filterUserId || undefined, _sort: sort, _order: sort === 'id' ? 'DESC' : 'ASC', _page: page, _limit: 5 } })
+  const res = await API.get('/posts', { params: { search, filterUserId, sort, page } })
   setCache(key, res.data)
   return res
 }
@@ -93,4 +83,3 @@ export const updateComment = (id, name, body, userId) =>
 
 export const deleteComment = (id, userId) =>
   API.delete(`/comments/${id}`, { data: { userId } })
-
