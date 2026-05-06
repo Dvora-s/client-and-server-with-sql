@@ -35,3 +35,19 @@ export const deleteComment = async (id) => {
   const [result] = await pool.query('DELETE FROM comments WHERE id = ?', [id]);
   return result.affectedRows;
 };
+
+export const updateCommentIfOwner = async (id, userId, name, body) => {
+  const [check] = await pool.query('SELECT user_id FROM comments WHERE id = ?', [id]);
+  if (!check[0]) return null;
+  if (check[0].user_id != userId) return false;
+  await pool.query('UPDATE comments SET name = ?, body = ? WHERE id = ?', [name, body, id]);
+  return true;
+};
+
+export const deleteCommentIfOwner = async (id, userId) => {
+  const [check] = await pool.query('SELECT user_id FROM comments WHERE id = ?', [id]);
+  if (!check[0]) return null;
+  if (check[0].user_id != userId) return false;
+  await pool.query('DELETE FROM comments WHERE id = ?', [id]);
+  return true;
+};

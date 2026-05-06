@@ -1,19 +1,26 @@
 import * as postsDal from '../dal/postsDal.js';
+import { getCache, setCache, clearCache } from '../cache.js';
 
 export const getAll = async (req, res) => {
   try {
     const { userId, search = '', filterUserId = '', page = 1 } = req.query;
+    const key = `posts_${userId}_${search}_${filterUserId}_${page}`;
+    if (getCache(key)) return res.json(getCache(key));
     const limit = 5;
     const offset = (parseInt(page) - 1) * limit;
+    let result;
     if (userId) {
       const posts = await postsDal.getPostsByUserId(userId, search);
-      return res.json({ posts, total: posts.length });
+      result = { posts, total: posts.length };
+    } else {
+      const [posts, total] = await Promise.all([
+        postsDal.getAllPosts(search, filterUserId, limit, offset),
+        postsDal.countAllPosts(search, filterUserId)
+      ]);
+      result = { posts, total };
     }
-    const [posts, total] = await Promise.all([
-      postsDal.getAllPosts(search, filterUserId, limit, offset),
-      postsDal.countAllPosts(search, filterUserId)
-    ]);
-    res.json({ posts, total });
+    setCache(key, result);
+    res.json(result);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -33,6 +40,7 @@ export const create = async (req, res) => {
   const { userId, title, body } = req.body;
   try {
     const id = await postsDal.createPost(userId, title, body);
+    clearCache('posts_');
     res.status(201).json({ id, userId, title, body });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -42,10 +50,10 @@ export const create = async (req, res) => {
 export const update = async (req, res) => {
   const { title, body, userId } = req.body;
   try {
-    const post = await postsDal.getPostById(req.params.id);
-    if (!post) return res.status(404).json({ message: 'Post not found' });
-    if (post.user_id != userId) return res.status(403).json({ message: 'Not authorized' });
-    await postsDal.updatePost(req.params.id, title, body);
+    const affected = await postsDal.updatePostIfOwner(req.params.id, userId, title, body);
+    if (affected === null) return res.status(404).json({ message: 'Post not found' });
+    if (affected === false) return res.status(403).json({ message: 'Not authorized' });
+    clearCache('posts_');
     res.json({ id: req.params.id, title, body });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -55,10 +63,10 @@ export const update = async (req, res) => {
 export const remove = async (req, res) => {
   const { userId } = req.body;
   try {
-    const post = await postsDal.getPostById(req.params.id);
-    if (!post) return res.status(404).json({ message: 'Post not found' });
-    if (post.user_id != userId) return res.status(403).json({ message: 'Not authorized' });
-    await postsDal.deletePost(req.params.id);
+    const affected = await postsDal.deletePostIfOwner(req.params.id, userId);
+    if (affected === null) return res.status(404).json({ message: 'Post not found' });
+    if (affected === false) return res.status(403).json({ message: 'Not authorized' });
+    clearCache('posts_');
     res.json({ message: 'Post deleted' });
   } catch (err) {
     res.status(500).json({ message: err.message });

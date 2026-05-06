@@ -49,3 +49,19 @@ export const deletePost = async (id) => {
   const [result] = await pool.query('DELETE FROM posts WHERE id = ?', [id]);
   return result.affectedRows;
 };
+
+export const updatePostIfOwner = async (id, userId, title, body) => {
+  const [check] = await pool.query('SELECT user_id FROM posts WHERE id = ?', [id]);
+  if (!check[0]) return null;
+  if (check[0].user_id != userId) return false;
+  await pool.query('UPDATE posts SET title = ?, body = ? WHERE id = ?', [title, body, id]);
+  return true;
+};
+
+export const deletePostIfOwner = async (id, userId) => {
+  const [check] = await pool.query('SELECT user_id FROM posts WHERE id = ?', [id]);
+  if (!check[0]) return null;
+  if (check[0].user_id != userId) return false;
+  await pool.query('DELETE FROM posts WHERE id = ?', [id]);
+  return true;
+};

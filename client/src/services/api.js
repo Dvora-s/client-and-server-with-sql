@@ -1,14 +1,9 @@
 import axios from 'axios'
+import { getCache, setCache, clearCache } from './cache.js'
 
 const API = axios.create({ baseURL: 'http://localhost:3002' })
 
-const cache = {}
-
-const getCache = (key) => cache[key]
-const setCache = (key, data) => { cache[key] = data }
-export const clearCache = (prefix) => {
-  Object.keys(cache).forEach(k => { if (k.startsWith(prefix)) delete cache[k] })
-}
+export { clearCache }
 
 export const loginUser = (username, password) =>
   API.post('/auth/login', { username, password })
@@ -82,3 +77,4 @@ export const updateComment = (id, name, body, userId) =>
 
 export const deleteComment = (id, userId) =>
   API.delete(`/comments/${id}`, { data: { userId } })
+
