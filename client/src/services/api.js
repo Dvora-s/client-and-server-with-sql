@@ -2,6 +2,12 @@ import axios from 'axios'
 
 const API = axios.create({ baseURL: 'http://localhost:3002' })
 
+API.interceptors.request.use((config) => {
+  const user = JSON.parse(localStorage.getItem('user'))
+  if (user?.token) config.headers.Authorization = `Bearer ${user.token}`
+  return config
+})
+
 const cache = {}
 
 const getCache = (key) => cache[key]
@@ -16,10 +22,10 @@ export const loginUser = (username, password) =>
 export const registerUser = (name, username, email, password, phone, address) =>
   API.post('/auth/register', { name, username, email, password, phone, address })
 
-export const getUserTodos = async (userId, search = '', sort = 'id', page = 1) => {
-  const key = `todos_${userId}_${search}_${sort}_${page}`
+export const getUserTodos = async (userId, search = '', sort = 'id', page = 1, completed = '') => {
+  const key = `todos_${userId}_${search}_${sort}_${page}_${completed}`
   if (getCache(key)) return { data: getCache(key) }
-  const res = await API.get('/todos', { params: { userId, search, sort, page } })
+  const res = await API.get('/todos', { params: { userId, q: search, _sort: sort, _page: page, _limit: 10, completed } })
   setCache(key, res.data)
   return res
 }
@@ -42,10 +48,10 @@ export const deleteTodo = async (id) => {
   return res
 }
 
-export const getAllPosts = async (search = '', filterUserId = '', page = 1) => {
-  const key = `posts_${search}_${filterUserId}_${page}`
+export const getAllPosts = async (search = '', filterUserId = '', sort = 'id', page = 1) => {
+  const key = `posts_${search}_${filterUserId}_${sort}_${page}`
   if (getCache(key)) return { data: getCache(key) }
-  const res = await API.get('/posts', { params: { search, filterUserId, page } })
+  const res = await API.get('/posts', { params: { q: search, user_id: filterUserId || undefined, _sort: sort, _order: sort === 'id' ? 'DESC' : 'ASC', _page: page, _limit: 5 } })
   setCache(key, res.data)
   return res
 }

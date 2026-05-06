@@ -6,6 +6,7 @@ export default function PostsPage() {
   const [posts, setPosts] = useState([])
   const [search, setSearch] = useState('')
   const [filterUserId, setFilterUserId] = useState('')
+  const [sort, setSort] = useState('id')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const LIMIT = 5
@@ -16,8 +17,8 @@ export default function PostsPage() {
   const [newComment, setNewComment] = useState({})
   const [editComment, setEditComment] = useState(null)
 
-  const fetchPosts = (s = search, f = filterUserId, p = page) =>
-    getAllPosts(s, f, p).then(({ data }) => {
+  const fetchPosts = (s = search, f = filterUserId, o = sort, p = page) =>
+    getAllPosts(s, f, o, p).then(({ data }) => {
       const posts = Array.isArray(data) ? data : (data.posts || [])
       const total = Array.isArray(data) ? data.length : (data.total || 0)
       setPosts(posts)
@@ -29,18 +30,24 @@ export default function PostsPage() {
   const handleSearch = (e) => {
     setSearch(e.target.value)
     setPage(1)
-    fetchPosts(e.target.value, filterUserId, 1)
+    fetchPosts(e.target.value, filterUserId, sort, 1)
   }
 
   const handleFilterUser = (e) => {
     setFilterUserId(e.target.value)
     setPage(1)
-    fetchPosts(search, e.target.value, 1)
+    fetchPosts(search, e.target.value, sort, 1)
+  }
+
+  const handleSort = (e) => {
+    setSort(e.target.value)
+    setPage(1)
+    fetchPosts(search, filterUserId, e.target.value, 1)
   }
 
   const handlePageChange = (newPage) => {
     setPage(newPage)
-    fetchPosts(search, filterUserId, newPage)
+    fetchPosts(search, filterUserId, sort, newPage)
   }
 
   const handleAddPost = async (e) => {
@@ -114,6 +121,11 @@ export default function PostsPage() {
         <select value={filterUserId} onChange={handleFilterUser}>
           <option value="">Written by: Everyone</option>
           <option value={user.id}>Written by: Me</option>
+        </select>
+        <select value={sort} onChange={handleSort}>
+          <option value="id">Sort by Newest</option>
+          <option value="title">Sort by Title</option>
+          <option value="user">Sort by Author</option>
         </select>
       </div>
 

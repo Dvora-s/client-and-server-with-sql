@@ -2,17 +2,31 @@ import * as todosDal from '../dal/todosDal.js';
 
 export const getAll = async (req, res) => {
   try {
-    const { userId, search = '', sort = 'id', page = 1 } = req.query;
-    const limit = 5;
-    const offset = (parseInt(page) - 1) * limit;
+    const {
+      userId,
+      _limit = 10,
+      _page = 1,
+      _sort = 'id',
+      _order = 'ASC',
+      completed,
+      ...filters
+    } = req.query;
+
+    const limit = parseInt(_limit);
+    const offset = (parseInt(_page) - 1) * limit;
+    const search = filters.title_like || filters.q || '';
+
     if (!userId) {
       const todos = await todosDal.getAllTodos();
       return res.json({ todos, total: todos.length });
     }
+
     const [todos, total] = await Promise.all([
-      todosDal.getTodosByUserId(userId, search, sort, limit, offset),
-      todosDal.countTodosByUserId(userId, search)
+      todosDal.getTodosByUserId(userId, search, _sort, _order, limit, offset, completed),
+      todosDal.countTodosByUserId(userId, search, completed)
     ]);
+
+    res.set('X-Total-Count', total);
     res.json({ todos, total });
   } catch (err) {
     res.status(500).json({ message: err.message });

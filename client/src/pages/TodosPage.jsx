@@ -9,12 +9,13 @@ export default function TodosPage() {
   const [editTitle, setEditTitle] = useState('')
   const [search, setSearch] = useState('')
   const [sort, setSort] = useState('id')
+  const [completed, setCompleted] = useState('')
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
   const LIMIT = 5
 
-  const fetchTodos = (s = search, o = sort, p = page) =>
-    getUserTodos(user.id, s, o, p).then(({ data }) => {
+  const fetchTodos = (s = search, o = sort, p = page, c = completed) =>
+    getUserTodos(user.id, s, o, p, c).then(({ data }) => {
       const todos = Array.isArray(data) ? data : (data.todos || [])
       const total = Array.isArray(data) ? data.length : (data.total || 0)
       setTodos(todos)
@@ -32,7 +33,13 @@ export default function TodosPage() {
   const handleSort = (e) => {
     setSort(e.target.value)
     setPage(1)
-    fetchTodos(search, e.target.value, 1)
+    fetchTodos(search, e.target.value, 1, completed)
+  }
+
+  const handleCompleted = (e) => {
+    setCompleted(e.target.value)
+    setPage(1)
+    fetchTodos(search, sort, 1, e.target.value)
   }
 
   const handlePageChange = (newPage) => {
@@ -81,6 +88,11 @@ export default function TodosPage() {
           <option value="title">Sort by Title</option>
           <option value="date">Sort by Date</option>
           <option value="completed">Sort by Status</option>
+        </select>
+        <select value={completed} onChange={handleCompleted}>
+          <option value="">All</option>
+          <option value="false">Pending</option>
+          <option value="true">Completed</option>
         </select>
       </div>
 
