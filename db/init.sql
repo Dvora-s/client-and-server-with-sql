@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   phone VARCHAR(20),
   address VARCHAR(255)
 );
-
+//hhk
 CREATE TABLE IF NOT EXISTS passwords (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NOT NULL UNIQUE,
