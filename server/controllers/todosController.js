@@ -15,7 +15,7 @@ export const getAll = async (req, res) => {
       return res.json(result);
     }
     const [todos, total] = await Promise.all([
-      todosDal.getTodosByUserId(userId, search, sort, limit, offset),
+      todosDal.getTodosByUserId(userId, search, sort, 'ASC', limit, offset),
       todosDal.countTodosByUserId(userId, search)
     ]);
     const result = { todos, total };
