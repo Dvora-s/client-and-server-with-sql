@@ -42,10 +42,10 @@ export const deleteTodo = async (id) => {
   return res
 }
 
-export const getAllPosts = async (search = '', page = 1) => {
-  const key = `posts_${search}_${page}`
+export const getAllPosts = async (search = '', filterUserId = '', page = 1) => {
+  const key = `posts_${search}_${filterUserId}_${page}`
   if (getCache(key)) return { data: getCache(key) }
-  const res = await API.get('/posts', { params: { search, page } })
+  const res = await API.get('/posts', { params: { search, filterUserId, page } })
   setCache(key, res.data)
   return res
 }

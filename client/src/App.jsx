@@ -1,20 +1,29 @@
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import InfoPage from './pages/InfoPage'
 import TodosPage from './pages/TodosPage'
 import PostsPage from './pages/PostsPage'
 import Navbar from './components/Navbar'
 
+function AccessDenied() {
+  return (
+    <div style={{ textAlign: 'center', marginTop: '100px' }}>
+      <h2 style={{ color: '#e53e3e' }}>אין לך גישה למשאב זה</h2>
+    </div>
+  )
+}
+
 function ProtectedLayout() {
   const user = JSON.parse(localStorage.getItem('user'))
+  const { username } = useParams()
   if (!user) return <Navigate to="/login" replace />
   return (
     <>
       <Navbar username={user.username} />
       <Routes>
-        <Route path="info" element={<InfoPage />} />
-        <Route path="todos" element={<TodosPage />} />
-        <Route path="posts" element={<PostsPage />} />
+        <Route path="info" element={user.username === username ? <InfoPage /> : <AccessDenied />} />
+        <Route path="todos" element={user.username === username ? <TodosPage /> : <AccessDenied />} />
+        <Route path="posts" element={user.username === username ? <PostsPage /> : <AccessDenied />} />
         <Route path="*" element={<Navigate to="info" replace />} />
       </Routes>
     </>

@@ -2,7 +2,7 @@ import * as postsDal from '../dal/postsDal.js';
 
 export const getAll = async (req, res) => {
   try {
-    const { userId, search = '', page = 1 } = req.query;
+    const { userId, search = '', filterUserId = '', page = 1 } = req.query;
     const limit = 5;
     const offset = (parseInt(page) - 1) * limit;
     if (userId) {
@@ -10,8 +10,8 @@ export const getAll = async (req, res) => {
       return res.json({ posts, total: posts.length });
     }
     const [posts, total] = await Promise.all([
-      postsDal.getAllPosts(search, limit, offset),
-      postsDal.countAllPosts(search)
+      postsDal.getAllPosts(search, filterUserId, limit, offset),
+      postsDal.countAllPosts(search, filterUserId)
     ]);
     res.json({ posts, total });
   } catch (err) {
