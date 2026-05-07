@@ -1,110 +1,20 @@
-import { useEffect, useState } from 'react'
-import { getAllPosts, addPost, updatePost, deletePost, getComments, addComment, updateComment, deleteComment } from '../services/api'
+import { useUser } from '../hooks/useUser'
+import { usePosts } from '../hooks/usePosts'
+import { useComments } from '../hooks/useComments'
 
 export default function PostsPage() {
-  const user = JSON.parse(localStorage.getItem('user'))
-  const [posts, setPosts] = useState([])
-  const [search, setSearch] = useState('')
-  const [filterUserId, setFilterUserId] = useState('')
-  const [sort, setSort] = useState('id')
-  const [page, setPage] = useState(1)
-  const [total, setTotal] = useState(0)
-  const LIMIT = 5
-  const [newPost, setNewPost] = useState({ title: '', body: '' })
-  const [editPost, setEditPost] = useState(null)
-  const [openComments, setOpenComments] = useState({})
-  const [comments, setComments] = useState({})
-  const [newComment, setNewComment] = useState({})
-  const [editComment, setEditComment] = useState(null)
+  const user = useUser()
+  const {
+    posts, total, search, filterUserId, sort, page, LIMIT,
+    newPost, setNewPost, editPost, setEditPost,
+    handleSearch, handleFilterUser, handleSort, handlePageChange,
+    handleAddPost, handleUpdatePost, handleDeletePost
+  } = usePosts(user.id)
 
-  const fetchPosts = (s = search, f = filterUserId, o = sort, p = page) =>
-    getAllPosts(s, f, o, p).then(({ data }) => {
-      const posts = Array.isArray(data) ? data : (data.posts || [])
-      const total = Array.isArray(data) ? data.length : (data.total || 0)
-      setPosts(posts)
-      setTotal(total)
-    })
-
-  useEffect(() => { fetchPosts() }, [])
-
-  const handleSearch = (e) => {
-    setSearch(e.target.value)
-    setPage(1)
-    fetchPosts(e.target.value, filterUserId, sort, 1)
-  }
-
-  const handleFilterUser = (e) => {
-    setFilterUserId(e.target.value)
-    setPage(1)
-    fetchPosts(search, e.target.value, sort, 1)
-  }
-
-  const handleSort = (e) => {
-    setSort(e.target.value)
-    setPage(1)
-    fetchPosts(search, filterUserId, e.target.value, 1)
-  }
-
-  const handlePageChange = (newPage) => {
-    setPage(newPage)
-    fetchPosts(search, filterUserId, sort, newPage)
-  }
-
-  const handleAddPost = async (e) => {
-    e.preventDefault()
-    if (!newPost.title.trim() || !newPost.body.trim()) return
-    await addPost(user.id, newPost.title.trim(), newPost.body.trim())
-    setNewPost({ title: '', body: '' })
-    fetchPosts(search, page)
-  }
-
-  const handleUpdatePost = async (post) => {
-    await updatePost(post.id, editPost.title, editPost.body, user.id)
-    setEditPost(null)
-    fetchPosts(search, page)
-  }
-
-  const handleDeletePost = async (id) => {
-    await deletePost(id, user.id)
-    fetchPosts(search, page)
-  }
-
-  const toggleComments = async (postId) => {
-    if (openComments[postId]) {
-      setOpenComments(prev => ({ ...prev, [postId]: false }))
-      return
-    }
-    const { data } = await getComments(postId)
-    setComments(prev => ({ ...prev, [postId]: data }))
-    setOpenComments(prev => ({ ...prev, [postId]: true }))
-  }
-
-  const handleAddComment = async (postId) => {
-    const body = newComment[postId]
-    if (!body?.trim()) return
-    const { data } = await addComment(postId, user.id, user.username, body.trim())
-    setComments(prev => ({ ...prev, [postId]: [...(prev[postId] || []), data] }))
-    setNewComment(prev => ({ ...prev, [postId]: '' }))
-  }
-
-  const handleUpdateComment = async (comment) => {
-    await updateComment(comment.id, editComment.name, editComment.body, user.id)
-    setComments(prev => ({
-      ...prev,
-      [comment.post_id]: prev[comment.post_id].map(c =>
-        c.id === comment.id ? { ...c, ...editComment } : c
-      )
-    }))
-    setEditComment(null)
-  }
-
-  const handleDeleteComment = async (comment) => {
-    await deleteComment(comment.id, user.id)
-    setComments(prev => ({
-      ...prev,
-      [comment.post_id]: prev[comment.post_id].filter(c => c.id !== comment.id)
-    }))
-  }
+  const {
+    comments, openComments, newComment, setNewComment, editComment, setEditComment,
+    toggleComments, handleAddComment, handleUpdateComment, handleDeleteComment
+  } = useComments(user.id, user.username)
 
   return (
     <div className="page">
@@ -198,6 +108,7 @@ export default function PostsPage() {
           )}
         </div>
       ))}
+
       <div className="pagination">
         <button disabled={page === 1} onClick={() => handlePageChange(page - 1)}>◀ Prev</button>
         <span>Page {page} of {Math.ceil(total / LIMIT)}</span>

@@ -1,5 +1,7 @@
+import { useUser } from '../hooks/useUser'
+
 export default function InfoPage() {
-  const user = JSON.parse(localStorage.getItem('user'))
+  const user = useUser()
 
   return (
     <div className="page">

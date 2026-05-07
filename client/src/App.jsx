@@ -4,6 +4,7 @@ import InfoPage from './pages/InfoPage'
 import TodosPage from './pages/TodosPage'
 import PostsPage from './pages/PostsPage'
 import Navbar from './components/Navbar'
+import { useUser } from './hooks/useUser'
 
 function AccessDenied() {
   return (
@@ -14,7 +15,7 @@ function AccessDenied() {
 }
 
 function ProtectedLayout() {
-  const user = JSON.parse(localStorage.getItem('user'))
+  const user = useUser()
   const { username } = useParams()
   if (!user) return <Navigate to="/login" replace />
   return (
