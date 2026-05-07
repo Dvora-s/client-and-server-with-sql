@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useParams } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import InfoPage from './pages/InfoPage'
 import TodosPage from './pages/TodosPage'
 import PostsPage from './pages/PostsPage'
@@ -35,6 +36,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/register" element={<RegisterPage />} />
       <Route path="/users/:username/*" element={<ProtectedLayout />} />
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>

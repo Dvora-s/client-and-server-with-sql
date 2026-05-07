@@ -80,3 +80,6 @@ export const updateComment = (id, name, body, userId) =>
 
 export const deleteComment = (id, userId) =>
   API.delete(`/comments/${id}`, { data: { userId } })
+
+export const deleteUser = (id) =>
+  API.delete(`/users/${id}`)

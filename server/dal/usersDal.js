@@ -19,14 +19,6 @@ export const createUser = async (name, username, email, password, phone, address
   }
 };
 
-export const updateUser = async (id, name, username, email) => {
-  const [result] = await pool.query(
-    'UPDATE users SET name = ?, username = ?, email = ? WHERE id = ?',
-    [name, username, email, id]
-  );
-  return result.affectedRows;
-};
-
 export const deleteUser = async (id) => {
   const [result] = await pool.query('DELETE FROM users WHERE id = ?', [id]);
   return result.affectedRows;
