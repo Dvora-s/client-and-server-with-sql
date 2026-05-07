@@ -3,24 +3,13 @@ import { getCache, setCache, clearCache } from '../cache.js';
 
 export const getAll = async (req, res) => {
   try {
-    const postId = req.query.postId;
-    const key = `comments_${postId || 'all'}`;
+    const { postId } = req.query;
+    if (!postId) return res.status(400).json({ message: 'postId is required' });
+    const key = `comments_${postId}`;
     if (getCache(key)) return res.json(getCache(key));
-    const comments = postId
-      ? await commentsDal.getCommentsByPostId(postId)
-      : await commentsDal.getAllComments();
+    const comments = await commentsDal.getCommentsByPostId(postId);
     setCache(key, comments);
     res.json(comments);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-export const getById = async (req, res) => {
-  try {
-    const comment = await commentsDal.getCommentById(req.params.id);
-    if (!comment) return res.status(404).json({ message: 'Comment not found' });
-    res.json(comment);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

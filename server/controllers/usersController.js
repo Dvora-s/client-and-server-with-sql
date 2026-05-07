@@ -1,32 +1,10 @@
 import * as usersDal from '../dal/usersDal.js';
-import { getCache, setCache, clearCache } from '../cache.js';
-
-export const getAll = async (req, res) => {
-  try {
-    if (getCache('users_all')) return res.json(getCache('users_all'));
-    const users = await usersDal.getAllUsers();
-    setCache('users_all', users);
-    res.json(users);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-export const getById = async (req, res) => {
-  try {
-    const key = `users_${req.params.id}`;
-    if (getCache(key)) return res.json(getCache(key));
-    const user = await usersDal.getUserById(req.params.id);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    setCache(key, user);
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
+import { getCache, clearCache } from '../cache.js';
 
 export const update = async (req, res) => {
   const { name, username, email } = req.body;
+  if (req.user.id != req.params.id)
+    return res.status(403).json({ message: 'Not authorized' });
   try {
     const affected = await usersDal.updateUser(req.params.id, name, username, email);
     if (!affected) return res.status(404).json({ message: 'User not found' });
@@ -38,6 +16,8 @@ export const update = async (req, res) => {
 };
 
 export const remove = async (req, res) => {
+  if (req.user.id != req.params.id)
+    return res.status(403).json({ message: 'Not authorized' });
   try {
     const affected = await usersDal.deleteUser(req.params.id);
     if (!affected) return res.status(404).json({ message: 'User not found' });

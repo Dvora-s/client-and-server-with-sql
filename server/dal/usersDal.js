@@ -1,15 +1,5 @@
 import pool from '../config/db.js';
 
-export const getAllUsers = async () => {
-  const [rows] = await pool.query('SELECT id, name, username, email, phone, address FROM users');
-  return rows;
-};
-
-export const getUserById = async (id) => {
-  const [rows] = await pool.query('SELECT id, name, username, email, phone, address FROM users WHERE id = ?', [id]);
-  return rows[0];
-};
-
 export const createUser = async (name, username, email, password, phone, address) => {
   const conn = await pool.getConnection();
   try {

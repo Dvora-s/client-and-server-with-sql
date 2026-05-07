@@ -4,16 +4,11 @@ import { getCache, setCache, clearCache } from '../cache.js';
 export const getAll = async (req, res) => {
   try {
     const { userId, search = '', sort = 'id', page = 1 } = req.query;
+    if (!userId) return res.status(400).json({ message: 'userId is required' });
     const key = `todos_${userId}_${search}_${sort}_${page}`;
     if (getCache(key)) return res.json(getCache(key));
     const limit = 5;
     const offset = (parseInt(page) - 1) * limit;
-    if (!userId) {
-      const todos = await todosDal.getAllTodos();
-      const result = { todos, total: todos.length };
-      setCache(key, result);
-      return res.json(result);
-    }
     const [todos, total] = await Promise.all([
       todosDal.getTodosByUserId(userId, search, sort, 'ASC', limit, offset),
       todosDal.countTodosByUserId(userId, search)
@@ -21,16 +16,6 @@ export const getAll = async (req, res) => {
     const result = { todos, total };
     setCache(key, result);
     res.json(result);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-export const getById = async (req, res) => {
-  try {
-    const todo = await todosDal.getTodoById(req.params.id);
-    if (!todo) return res.status(404).json({ message: 'Todo not found' });
-    res.json(todo);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

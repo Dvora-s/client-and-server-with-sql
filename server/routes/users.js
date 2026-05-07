@@ -1,11 +1,10 @@
 import { Router } from 'express';
-import { getAll, getById, update, remove } from '../controllers/usersController.js';
+import { update, remove } from '../controllers/usersController.js';
+import { verifyToken } from '../middleware/auth.js';
 
 const router = Router();
 
-router.get('/', getAll);
-router.get('/:id', getById);
-router.put('/:id', update);
-router.delete('/:id', remove);
+router.put('/:id', verifyToken, update);
+router.delete('/:id', verifyToken, remove);
 
 export default router;

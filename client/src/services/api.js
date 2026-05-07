@@ -51,9 +51,6 @@ export const getAllPosts = async (search = '', filterUserId = '', sort = 'id', p
   return res
 }
 
-export const getUserPosts = (userId) =>
-  API.get('/posts', { params: { userId } })
-
 export const addPost = async (userId, title, body) => {
   const res = await API.post('/posts', { userId, title, body })
   clearCache('posts_')
